@@ -10,5 +10,5 @@ from selenium.webdriver.support.wait import WebDriverWait
 
 @given('Open the main page')
 def open_reelly(context):
-    context.driver.get('https://soft.reelly.io/')
+    context.app.main_page.open_main()
 

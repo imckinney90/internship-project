@@ -1,24 +1,36 @@
 from .base_page import BasePage
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import TimeoutException
 
 class LoginPage(BasePage):
-    # Locators
     EMAIL = (By.ID, "email-2")
     PASSWORD = (By.ID, "field")
     LOGIN = (By.CSS_SELECTOR, "[wized='loginButton']")
 
     def enter_email(self, email):
-        self.input_text(email, self.EMAIL)
+        try:
+            self.input_text(email, self.EMAIL)
+        except TimeoutException:
+            raise TimeoutException("Email field not accessible")
 
     def enter_password(self, password):
-        self.input_text(password, self.PASSWORD)
+        try:
+            self.input_text(password, self.PASSWORD)
+        except TimeoutException:
+            raise TimeoutException("Password field not accessible")
 
     def click_continue_button(self):
-        self.click(self.LOGIN)
+        try:
+            self.click(self.LOGIN)
+        except TimeoutException:
+            raise TimeoutException("Login button not clickable")
 
-    def login(self, email="reelly_careerist_test@proton.me", password="Test"):
-        self.enter_email(email)
-        self.enter_password(password)
-        self.click_continue_button()
+    def login(self, email="imckinney1@hotmail.com", password="Newport#90"):
+        try:
+            self.enter_email(email)
+            self.enter_password(password)
+            self.click_continue_button()
+        except Exception as e:
+            raise Exception(f"Login failed: {str(e)}")
 
 
