@@ -1,5 +1,6 @@
 from sys import excepthook
 
+from django.db.models import EmailField
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -9,20 +10,10 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
 
-@given('Log in with valid credentials')
-def login_with_valid_credentials(context):  # Added function definition
-    email_field = WebDriverWait(context.driver, 10).until(
-        EC.presence_of_element_located((By.ID, "email-2"))
-    )
-    email_field.send_keys("reelly_careerist_test@proton.me")
-    password_field = WebDriverWait(context.driver, 10).until(
-        EC.presence_of_element_located((By.ID, "field"))
-    )
-    password_field.send_keys("Test")
-    continue_button = WebDriverWait(context.driver, 10).until(
-        EC.element_to_be_clickable((By.CSS_SELECTOR, "[wized='loginButton']"))
-    )
-    continue_button.click()
+Off_Plan_Button = (By.CSS_SELECTOR, "[class*='1-link-menu']")
+Off_Plan_Text = (By.XPATH, "//*[contains(@id, 'b528dfcf-d2ee-f936')]")
+Product_Image = (By.CLASS_NAME, "project-image")
+Product_Title = (By.CLASS_NAME, "project-name")
 
 
 @when('Navigate to the "Off plan" page via the left-side menu')
@@ -58,21 +49,33 @@ def verify_visible_product(context):
 
     context.driver.execute_script("window.scrollTo(0, 0);")
 
+
     images = WebDriverWait(context.driver, 20).until(
         EC.presence_of_all_elements_located((By.CLASS_NAME, "project-image"))
     )
+    titles = WebDriverWait(context.driver, 20).until(
+        EC.presence_of_all_elements_located((By.CLASS_NAME, "project-name"))
+    )
 
-    assert len(images) == 24, f"Expected 24 project images, but found {len(images)}"
+    assert len(images) == len(
+        titles) == 24, f"Expected 24 products, but found {len(images)} images and {len(titles)} titles"
 
-    for index, image in enumerate(images, 1):
+    for index, (image, title) in enumerate(zip(images, titles), 1):
         try:
+
             context.driver.execute_script("arguments[0].scrollIntoView(true);", image)
             context.driver.execute_script("window.scrollBy(0, -100);")
+            sleep(1)
+
 
             assert image.is_displayed(), f"Image #{index} with class 'project-image' is not displayed"
-            print(f"Image #{index} is visible")
+            assert title.is_displayed(), f"Title #{index} with class 'project-name' is not displayed"
+
+            print(f"Product #{index}: Image and title are visible")
 
         except Exception as e:
-            assert False, f"Failed to verify visibility of image #{index}: {str(e)}"
+            assert False, f"Failed to verify product #{index}: {str(e)}"
 
-    print(f"Successfully verified all {len(images)} project images are present and visible")
+    print(f"Successfully verified all {len(images)} products have visible images and titles")
+
+
