@@ -46,4 +46,3 @@ class OffPlanPage(BasePage):
 
         except Exception as e:
             raise Exception(f"Product verification failed: {str(e)}")
-

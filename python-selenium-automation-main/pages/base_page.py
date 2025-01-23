@@ -9,23 +9,43 @@ from time import sleep
 class BasePage:
     def __init__(self, driver):
         self.driver = driver
-        self.wait = WebDriverWait(driver, 10)
+        self.wait = WebDriverWait(driver, 20)
         self.long_wait = WebDriverWait(driver, 20)
         self.actions = ActionChains(driver)
 
     def open_url(self, url):
-        self.driver.get(url)
+        try:
+            self.driver.get(url)
+
+            self.wait.until(
+                lambda driver: driver.execute_script('return document.readyState') == 'complete'
+            )
+
+            sleep(2)
+        except Exception as e:
+            print(f"Failed to load URL {url}: {str(e)}")
+            raise
 
     def click(self, locator):
-        element = self.wait.until(EC.element_to_be_clickable(locator))
-        element.click()
+        try:
+
+            element = self.wait.until(EC.element_to_be_clickable(locator))
+            self.driver.execute_script("arguments[0].scrollIntoView(true);", element)
+            sleep(1)
+            element.click()
+        except Exception as e:
+            print(f"Failed to click element {locator}: {str(e)}")
+            raise
 
     def find_element(self, locator, timeout=10):
         try:
             wait = self.long_wait if timeout == 20 else self.wait
-            return wait.until(EC.presence_of_element_located(locator))
+            element = wait.until(EC.presence_of_element_located(locator))
+            self.driver.execute_script("arguments[0].scrollIntoView(true);", element)
+            return element
         except TimeoutException:
-            raise TimeoutException(f"Element {locator} not found after {timeout} seconds")
+            print(f"Element {locator} not found after {timeout} seconds")
+            raise
 
     def find_elements(self, locator, timeout=10):
         try:
@@ -41,16 +61,23 @@ class BasePage:
         try:
             element = self.wait.until(EC.presence_of_element_located(locator))
             element.clear()
+            sleep(0.5)
             element.send_keys(text)
+            sleep(0.5)
         except TimeoutException:
-            raise TimeoutException(f"Input field {locator} not found after 10 seconds")
+            print(f"Input field {locator} not found or not interactive")
+            raise
 
     def scroll_to_element(self, element):
         try:
-            self.driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", element)
+            self.driver.execute_script(
+                "arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});",
+                element
+            )
             sleep(1)
         except Exception as e:
-            raise Exception(f"Failed to scroll to element: {str(e)}")
+            print(f"Failed to scroll to element: {str(e)}")
+            raise
 
     def scroll_page_to_bottom(self):
         last_height = self.driver.execute_script("return document.body.scrollHeight")
