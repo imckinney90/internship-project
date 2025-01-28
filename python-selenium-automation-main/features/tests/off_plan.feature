@@ -1,5 +1,5 @@
 Feature: Verify Titles and Pictures on the "Off Plan" Page
-
+@smoke
   Scenario: Verify Titles and Pictures on the "Off Plan" Page
     Given Open the main page
     And Log in with valid credentials

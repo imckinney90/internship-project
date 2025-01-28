@@ -1,10 +1,9 @@
-from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import TimeoutException, ElementNotVisibleException
 from time import sleep
-
+from support .logger import logger
 
 class BasePage:
     def __init__(self, driver):
@@ -14,9 +13,10 @@ class BasePage:
         self.actions = ActionChains(driver)
 
     def open_url(self, url):
+
         try:
             self.driver.get(url)
-
+            logger.info(f'Opening url: {url}')
             self.wait.until(
                 lambda driver: driver.execute_script('return document.readyState') == 'complete'
             )
@@ -28,7 +28,7 @@ class BasePage:
 
     def click(self, locator):
         try:
-
+            logger.info(f'Clicking {locator}')
             element = self.wait.until(EC.element_to_be_clickable(locator))
             self.driver.execute_script("arguments[0].scrollIntoView(true);", element)
             sleep(1)
@@ -39,6 +39,7 @@ class BasePage:
 
     def find_element(self, locator, timeout=10):
         try:
+            logger.info(f'Finding element {locator}')
             wait = self.long_wait if timeout == 20 else self.wait
             element = wait.until(EC.presence_of_element_located(locator))
             self.driver.execute_script("arguments[0].scrollIntoView(true);", element)
@@ -49,6 +50,7 @@ class BasePage:
 
     def find_elements(self, locator, timeout=10):
         try:
+            logger.info(f'Finding elements {locator}')
             wait = self.long_wait if timeout == 20 else self.wait
             elements = wait.until(EC.presence_of_all_elements_located(locator))
             if not elements:
@@ -59,6 +61,7 @@ class BasePage:
 
     def input_text(self, text, locator):
         try:
+            logger.info(f'Input text {text}')
             element = self.wait.until(EC.presence_of_element_located(locator))
             element.clear()
             sleep(0.5)
@@ -70,6 +73,7 @@ class BasePage:
 
     def scroll_to_element(self, element):
         try:
+            logger.info(f'Scrolling to element {element}')
             self.driver.execute_script(
                 "arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});",
                 element
@@ -81,7 +85,7 @@ class BasePage:
 
     def scroll_page_to_bottom(self):
         last_height = self.driver.execute_script("return document.body.scrollHeight")
-
+        logger.info(f'Scrolling page to bottom {last_height}')
         while True:
             self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             sleep(2)
