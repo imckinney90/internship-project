@@ -3,38 +3,93 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
-
 from app.application import Application
 from support.logger import logger
+import os
 
-# Commands to run tests with Allure & Behave:
-# behave
-# behave features/tests/cart_tests.feature
-# behave -t smoke
-#
-# # After you have Allure installed:
-# behave -f allure_behave.formatter:AllureFormatter -o test_results/ -t smoke
-#
-# # To generate the report:
-# allure serve test_results/
 
 def browser_init(context, scenario_name):
     """
-    Initialize WebDriver instance for Headless Chrome
+    Initialize WebDriver instance for different test environments
     :param context: Behave context
     :param scenario_name: Name of the current scenario
     """
-    ### HEADLESS CHROME ###
-    options = webdriver.ChromeOptions()
-    options.add_argument('--headless')
-    service = Service(ChromeDriverManager().install())
-    context.driver = webdriver.Chrome(
-        options=options,
-        service=service
-    )
 
-    # Set up window and wait times
-    context.driver.maximize_window()
+    # Read test configuration from environment variables
+    test_env = os.getenv('TEST_ENV', 'local')  # local, browserstack
+
+    if test_env == 'browserstack':
+        # BrowserStack credentials
+        bs_user = 'ianmckinney3'
+        bs_key = 'xU4wgcY7j3HxeeYspEGs'
+
+        # Create ChromeOptions instance for BrowserStack
+        options = webdriver.ChromeOptions()
+
+        # Set BrowserStack specific capabilities for mobile web testing
+        browserstack_options = {
+            # Device and OS settings
+            'deviceName': 'Samsung Galaxy S22',
+            'platformName': 'android',
+            'platformVersion': '12.0',
+
+            # Browser settings
+            'browserName': 'chrome',  # or 'safari' for iOS devices
+
+            # BrowserStack specific settings
+            'local': 'false',
+            'debug': 'true',
+            'networkLogs': 'true',
+            'projectName': 'Reelly Mobile Tests',
+            'buildName': f'Build {scenario_name}',
+            'sessionName': scenario_name,
+
+
+            'acceptInsecureCerts': 'true',
+            'consoleLogs': 'info'
+        }
+
+        options.set_capability('bstack:options', browserstack_options)
+
+        # Initialize BrowserStack driver
+        url = f'https://{bs_user}:{bs_key}@hub-cloud.browserstack.com/wd/hub'
+        context.driver = webdriver.Remote(
+            command_executor=url,
+            options=options
+        )
+
+
+
+    elif test_env == 'local':
+        mobile_emulation = {
+            "deviceName": "Nexus 5"
+        }
+        options = webdriver.ChromeOptions()
+        options.add_experimental_option("mobileEmulation", mobile_emulation)
+        options.add_argument('--auto-open-devtools-for-tabs')
+
+        driver_path = ChromeDriverManager().install()
+        service = Service(driver_path)
+        context.driver = webdriver.Chrome(
+            service=service,
+            options=options
+        )
+
+    elif test_env == 'grid':
+        mobile_emulation = {"deviceName": "Nexus 5"}
+        options = webdriver.ChromeOptions()
+        options.add_experimental_option("mobileEmulation", mobile_emulation)
+        options.set_capability("browserName", "chrome")
+
+        context.driver = webdriver.Remote(
+            command_executor='http://127.0.0.1:4444/wd/hub',
+            options=options
+        )
+
+
+    if test_env != 'browserstack':
+        context.driver.set_window_size(360, 640)
+
     context.driver.implicitly_wait(4)
     context.driver.wait = WebDriverWait(context.driver, 15)
     context.app = Application(context.driver)
@@ -55,6 +110,7 @@ def after_step(context, step):
     if step.status == 'failed':
         print('\nStep failed: ', step)
         logger.info(f'Step failed: {step}:')
+
 
 def after_scenario(context, feature):
     context.driver.quit()

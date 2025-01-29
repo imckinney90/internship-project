@@ -10,3 +10,4 @@ from selenium.webdriver.support.wait import WebDriverWait
 def login_with_valid_credentials(context):
     context.app.login_page.login()
 
+

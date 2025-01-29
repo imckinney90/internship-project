@@ -11,3 +11,4 @@ class LoginPage(BasePage):
         self.input_text(email, self.EMAIL)
         self.input_text(password, self.PASSWORD)
         self.click(self.LOGIN)
+

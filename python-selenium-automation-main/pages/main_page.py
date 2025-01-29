@@ -31,3 +31,5 @@ class MainPage(BasePage):
         except Exception as e:
             logger.error(f"Failed to open main page: {str(e)}")
             raise
+
+
