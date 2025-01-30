@@ -10,7 +10,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 def login_with_valid_credentials(context):
     context.app.login_page.login()
 
-@given('Log in with valid credentials for web')
+@when('Log in with valid credentials for web')
 def login_with_valid_credentials_for_web(context):
     context.app.login_page.login_mobile_web()
 

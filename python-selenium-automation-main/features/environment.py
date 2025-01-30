@@ -19,45 +19,22 @@ def browser_init(context, scenario_name):
     test_env = os.getenv('TEST_ENV', 'browserstack')  # local, browserstack
 
     if test_env == 'browserstack':
-        # BrowserStack credentials
         bs_user = 'ianmckinney3'
         bs_key = 'xU4wgcY7j3HxeeYspEGs'
+        url = f'http://hub-cloud.browserstack.com/wd/hub'
 
-        # Create ChromeOptions instance for BrowserStack
-        options = webdriver.ChromeOptions()
-
-        # Set BrowserStack specific capabilities for mobile web testing
-        browserstack_options = {
-            # Device and OS settings
-            'deviceName': 'Samsung Galaxy S22',
-            'platformName': 'android',
-            'platformVersion': '12.0',
-
-            # Browser settings
-            'browserName': 'chrome',  # or 'safari' for iOS devices
-
-            # BrowserStack specific settings
-            'local': 'false',
-            'debug': 'true',
-            'networkLogs': 'true',
-            'projectName': 'Reelly Mobile Tests',
-            'buildName': f'Build {scenario_name}',
+        options = Options()
+        bstack_options = {
+            'deviceName': 'Samsung Galaxy S22 Ultra',  # Replace with desired device
+            'platformName': 'Android',  # Or 'iOS'
+            'browserName': 'Chrome',  # Mobile Chrome browser
             'sessionName': scenario_name,
-            'interactiveDebugging': True,
-            'acceptInsecureCerts': 'true',
-            'consoleLogs': 'info'
+            'interactiveDebugging': True
         }
-
-        options.set_capability('bstack:options', browserstack_options)
-
-        # Initialize BrowserStack driver
-        url = f'https://{bs_user}:{bs_key}@hub-cloud.browserstack.com/wd/hub'
-        context.driver = webdriver.Remote(
-            command_executor=url,
-            options=options
-        )
-
-
+        options.set_capability('bstack:options', bstack_options)
+        options.set_capability('browserstack.user', bs_user)
+        options.set_capability('browserstack.key', bs_key)
+        context.driver = webdriver.Remote(command_executor=url, options=options)
 
     elif test_env == 'local':
         mobile_emulation = {
