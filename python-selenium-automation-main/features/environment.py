@@ -16,7 +16,7 @@ def browser_init(context, scenario_name):
     """
 
     # Read test configuration from environment variables
-    test_env = os.getenv('TEST_ENV', 'local')  # local, browserstack
+    test_env = os.getenv('TEST_ENV', 'browserstack')  # local, browserstack
 
     if test_env == 'browserstack':
         # BrowserStack credentials
@@ -43,8 +43,7 @@ def browser_init(context, scenario_name):
             'projectName': 'Reelly Mobile Tests',
             'buildName': f'Build {scenario_name}',
             'sessionName': scenario_name,
-
-
+            'interactiveDebugging': True,
             'acceptInsecureCerts': 'true',
             'consoleLogs': 'info'
         }

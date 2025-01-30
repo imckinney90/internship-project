@@ -1,9 +1,9 @@
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import TimeoutException, ElementNotVisibleException
 from time import sleep
 from support .logger import logger
+from selenium.webdriver.common.action_chains import ActionChains
 
 class BasePage:
     def __init__(self, driver):
@@ -42,7 +42,7 @@ class BasePage:
             logger.info(f'Finding element {locator}')
             wait = self.long_wait if timeout == 20 else self.wait
             element = wait.until(EC.presence_of_element_located(locator))
-            self.driver.execute_script("arguments[0].scrollIntoView(true);", element)
+            #self.driver.execute_script("arguments[0].scrollIntoView(true);", element)
             return element
         except TimeoutException:
             print(f"Element {locator} not found after {timeout} seconds")
@@ -98,4 +98,7 @@ class BasePage:
 
         self.driver.execute_script("window.scrollTo(0, 0);")
 
-
+    def click_page_body(self, *locator):
+        body = self.driver.find_element(*locator)
+        actions = ActionChains(self.driver)
+        actions.move_to_element(body).click().perform()
